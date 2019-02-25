@@ -33,16 +33,18 @@ AEJ_EnviornmentCharacter::AEJ_EnviornmentCharacter()
 
     // Create a CameraComponent	
     FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>( TEXT( "FirstPersonCamera" ) );
-    FirstPersonCameraComponent->SetupAttachment( GetCapsuleComponent() );
+    FirstPersonCameraComponent->SetupAttachment( RootComponent );
     FirstPersonCameraComponent->RelativeLocation = FVector( -39.56f, 1.75f, 64.f ); // Position the camera
-    FirstPersonCameraComponent->bUsePawnControlRotation = true;
+    //FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
     // Create VR Controllers.
     R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>( TEXT( "R_MotionController" ) );
     R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
+    R_MotionController->SetShowDeviceModel( true );
     R_MotionController->SetupAttachment( RootComponent );
     L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>( TEXT( "L_MotionController" ) );
     L_MotionController->SetupAttachment( RootComponent );
+    L_MotionController->SetShowDeviceModel( true );
 
     // Create a widget interaction
     LevelSelectInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>( TEXT( "LevelSelectInteraction" ) );
@@ -50,6 +52,7 @@ AEJ_EnviornmentCharacter::AEJ_EnviornmentCharacter()
 
     // Set VR motion controllers to be default
     bUsingMotionControllers = true;
+    bUseEyeLevel = false;
 }
 
 void AEJ_EnviornmentCharacter::BeginPlay()
@@ -57,6 +60,10 @@ void AEJ_EnviornmentCharacter::BeginPlay()
     // Call the base class  
     Super::BeginPlay();
 
+    if ( bUseEyeLevel )
+    {
+        UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin( EHMDTrackingOrigin::Eye );
+    }
 
     UWorld* const World = GetWorld();
     if ( World )
@@ -71,7 +78,7 @@ void AEJ_EnviornmentCharacter::BeginPlay()
             // Set Hidden
             LevelSelectWidget->SetActorLocation( LevelSelectionSpawnPoint->GetComponentLocation() );
             LevelSelectWidget->SetActorRotation( LevelSelectionSpawnPoint->GetComponentRotation() );
-
+            LevelSelectWidget->SetActorHiddenInGame( true );
         }
     }
 }
@@ -95,6 +102,7 @@ void AEJ_EnviornmentCharacter::SetupPlayerInputComponent( class UInputComponent*
     EnableTouchscreenMovement( PlayerInputComponent );
 
     PlayerInputComponent->BindAction( "Menu", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnMenu );
+    PlayerInputComponent->BindAction( "Fire", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnFire );
     PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnResetVR );
 
     // Bind movement events
@@ -115,6 +123,7 @@ void AEJ_EnviornmentCharacter::OnMenu()
     UE_LOG( LogTemp, Display, TEXT( "Pressed the Menu button!" ) );
     if ( LevelSelectWidget != nullptr )
     {
+        LevelSelectWidget->SetActorHiddenInGame( !LevelSelectWidget->bHidden );
         LevelSelectWidget->SetActorLocation( LevelSelectionSpawnPoint->GetComponentLocation() );
         LevelSelectWidget->SetActorRotation( LevelSelectionSpawnPoint->GetComponentRotation() );
     }
@@ -122,7 +131,9 @@ void AEJ_EnviornmentCharacter::OnMenu()
 
 void AEJ_EnviornmentCharacter::OnFire()
 {
-   
+    UE_LOG( LogTemp, Warning, TEXT( "Pressed the Fire button!" ) );
+
+    LevelSelectInteraction->PressPointerKey( EKeys::LeftMouseButton );
 }
 
 void AEJ_EnviornmentCharacter::OnResetVR()

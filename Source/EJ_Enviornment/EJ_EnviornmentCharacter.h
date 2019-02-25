@@ -36,9 +36,8 @@ class AEJ_EnviornmentCharacter : public ACharacter
     UPROPERTY( EditDefaultsOnly, Category = "Level Select", meta = ( AllowPrivateAccess = "true" ) )
     TSubclassOf<AActor> LevelSelectWidget_Class;
 
+    /** The spawned level selection widget on beginPlay */
     AActor* LevelSelectWidget;
-
-    
 
 public:
     AEJ_EnviornmentCharacter();
@@ -58,6 +57,10 @@ public:
     /** Whether to use motion controller location for aiming. */
     UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
     uint32 bUsingMotionControllers : 1;
+
+    /** Whether to use eye level for the VR Camera. */
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Demo Settings" )
+    uint32 bUseEyeLevel : 1;
 
 protected:
 
