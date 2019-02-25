@@ -25,6 +25,21 @@ class AEJ_EnviornmentCharacter : public ACharacter
     UPROPERTY( VisibleAnywhere, BlueprintReadOnly, meta = ( AllowPrivateAccess = "true" ) )
     class UMotionControllerComponent* L_MotionController;
 
+    /** The widget interaction component for selecting the level */
+    UPROPERTY( Category = "Level Select", VisibleAnywhere, BlueprintReadOnly, meta = ( AllowPrivateAccess = "true" ) )
+    class UWidgetInteractionComponent* LevelSelectInteraction;
+
+    UPROPERTY( Category = "Level Select", EditDefaultsOnly, BlueprintReadWrite, meta = ( AllowPrivateAccess = "true" ) )
+    class USceneComponent* LevelSelectionSpawnPoint;
+
+    /** The widget that will be 8used for level selection */
+    UPROPERTY( EditDefaultsOnly, Category = "Level Select", meta = ( AllowPrivateAccess = "true" ) )
+    TSubclassOf<AActor> LevelSelectWidget_Class;
+
+    AActor* LevelSelectWidget;
+
+    
+
 public:
     AEJ_EnviornmentCharacter();
 
@@ -40,12 +55,14 @@ public:
     UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = Camera )
     float BaseLookUpRate;
 
-
     /** Whether to use motion controller location for aiming. */
     UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Gameplay )
     uint32 bUsingMotionControllers : 1;
 
 protected:
+
+    /** Menu Pressed */
+    void OnMenu();
 
     /** Fires a projectile. */
     void OnFire();

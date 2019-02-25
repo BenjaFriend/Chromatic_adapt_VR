@@ -10,6 +10,8 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "MotionControllerComponent.h"
+#include "Runtime/Engine/Classes/Components/SceneComponent.h"
+#include "Runtime/UMG/Public/Components/WidgetInteractionComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
 DEFINE_LOG_CATEGORY_STATIC( LogFPChar, Warning, All );
@@ -26,14 +28,14 @@ AEJ_EnviornmentCharacter::AEJ_EnviornmentCharacter()
     BaseTurnRate = 45.f;
     BaseLookUpRate = 45.f;
 
+    LevelSelectionSpawnPoint = CreateDefaultSubobject<USceneComponent>( TEXT( "LevelSelectionSpawnPoint" ) );
+    LevelSelectionSpawnPoint->SetupAttachment( RootComponent );
+
     // Create a CameraComponent	
     FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>( TEXT( "FirstPersonCamera" ) );
     FirstPersonCameraComponent->SetupAttachment( GetCapsuleComponent() );
     FirstPersonCameraComponent->RelativeLocation = FVector( -39.56f, 1.75f, 64.f ); // Position the camera
     FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
-    // Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P, FP_Gun, and VR_Gun 
-    // are set in the derived blueprint asset named MyCharacter to avoid direct content references in C++.
 
     // Create VR Controllers.
     R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>( TEXT( "R_MotionController" ) );
@@ -42,7 +44,11 @@ AEJ_EnviornmentCharacter::AEJ_EnviornmentCharacter()
     L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>( TEXT( "L_MotionController" ) );
     L_MotionController->SetupAttachment( RootComponent );
 
-    // Uncomment the following line to turn motion controllers on by default:
+    // Create a widget interaction
+    LevelSelectInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>( TEXT( "LevelSelectInteraction" ) );
+    LevelSelectInteraction->SetupAttachment( R_MotionController );
+
+    // Set VR motion controllers to be default
     bUsingMotionControllers = true;
 }
 
@@ -50,6 +56,24 @@ void AEJ_EnviornmentCharacter::BeginPlay()
 {
     // Call the base class  
     Super::BeginPlay();
+
+
+    UWorld* const World = GetWorld();
+    if ( World )
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = this;
+
+        LevelSelectWidget = World->SpawnActor<AActor>( LevelSelectWidget_Class, SpawnParams );
+        if ( LevelSelectWidget )
+        {
+            // Set Hidden
+            LevelSelectWidget->SetActorLocation( LevelSelectionSpawnPoint->GetComponentLocation() );
+            LevelSelectWidget->SetActorRotation( LevelSelectionSpawnPoint->GetComponentRotation() );
+
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,20 +85,21 @@ void AEJ_EnviornmentCharacter::SetupPlayerInputComponent( class UInputComponent*
     check( PlayerInputComponent );
 
     // Bind jump events
-    PlayerInputComponent->BindAction( "Jump", IE_Pressed, this, &ACharacter::Jump );
-    PlayerInputComponent->BindAction( "Jump", IE_Released, this, &ACharacter::StopJumping );
+    //PlayerInputComponent->BindAction( "Jump", IE_Pressed, this, &ACharacter::Jump );
+    //PlayerInputComponent->BindAction( "Jump", IE_Released, this, &ACharacter::StopJumping );
 
     // Bind fire event
-    PlayerInputComponent->BindAction( "Fire", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnFire );
+    //PlayerInputComponent->BindAction( "Fire", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnFire );
 
     // Enable touchscreen input
     EnableTouchscreenMovement( PlayerInputComponent );
 
+    PlayerInputComponent->BindAction( "Menu", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnMenu );
     PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnResetVR );
 
     // Bind movement events
-    PlayerInputComponent->BindAxis( "MoveForward", this, &AEJ_EnviornmentCharacter::MoveForward );
-    PlayerInputComponent->BindAxis( "MoveRight", this, &AEJ_EnviornmentCharacter::MoveRight );
+    //PlayerInputComponent->BindAxis( "MoveForward", this, &AEJ_EnviornmentCharacter::MoveForward );
+    //PlayerInputComponent->BindAxis( "MoveRight", this, &AEJ_EnviornmentCharacter::MoveRight );
 
     // We have 2 versions of the rotation bindings to handle different kinds of devices differently
     // "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -83,6 +108,16 @@ void AEJ_EnviornmentCharacter::SetupPlayerInputComponent( class UInputComponent*
     PlayerInputComponent->BindAxis( "TurnRate", this, &AEJ_EnviornmentCharacter::TurnAtRate );
     PlayerInputComponent->BindAxis( "LookUp", this, &APawn::AddControllerPitchInput );
     PlayerInputComponent->BindAxis( "LookUpRate", this, &AEJ_EnviornmentCharacter::LookUpAtRate );
+}
+
+void AEJ_EnviornmentCharacter::OnMenu()
+{
+    UE_LOG( LogTemp, Display, TEXT( "Pressed the Menu button!" ) );
+    if ( LevelSelectWidget != nullptr )
+    {
+        LevelSelectWidget->SetActorLocation( LevelSelectionSpawnPoint->GetComponentLocation() );
+        LevelSelectWidget->SetActorRotation( LevelSelectionSpawnPoint->GetComponentRotation() );
+    }
 }
 
 void AEJ_EnviornmentCharacter::OnFire()
