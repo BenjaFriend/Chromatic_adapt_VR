@@ -70,6 +70,9 @@ protected:
     /** Fires a projectile. */
     void OnFire();
 
+    /** Released fire key */
+    void OnFireReleased();
+
     /** Resets HMD orientation and position in VR. */
     void OnResetVR();
 

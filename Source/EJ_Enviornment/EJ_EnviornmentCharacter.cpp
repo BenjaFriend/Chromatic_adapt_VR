@@ -103,6 +103,7 @@ void AEJ_EnviornmentCharacter::SetupPlayerInputComponent( class UInputComponent*
 
     PlayerInputComponent->BindAction( "Menu", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnMenu );
     PlayerInputComponent->BindAction( "Fire", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnFire );
+    PlayerInputComponent->BindAction( "Fire", IE_Released, this, &AEJ_EnviornmentCharacter::OnFireReleased );
     PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnResetVR );
 
     // Bind movement events
@@ -134,6 +135,13 @@ void AEJ_EnviornmentCharacter::OnFire()
     UE_LOG( LogTemp, Warning, TEXT( "Pressed the Fire button!" ) );
 
     LevelSelectInteraction->PressPointerKey( EKeys::LeftMouseButton );
+}
+
+void AEJ_EnviornmentCharacter::OnFireReleased()
+{
+    UE_LOG( LogTemp, Warning, TEXT( "Released the fire key!" ) );
+
+    LevelSelectInteraction->ReleasePointerKey( EKeys::LeftMouseButton );
 }
 
 void AEJ_EnviornmentCharacter::OnResetVR()
