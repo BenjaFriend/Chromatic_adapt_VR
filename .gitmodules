@@ -1,0 +1,3 @@
+[submodule "Scrutiny"]
+	path = Scrutiny
+	url = git@github.com:BenjaFriend/Scrutiny.git
