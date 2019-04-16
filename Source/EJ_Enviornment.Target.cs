@@ -9,5 +9,7 @@ public class EJ_EnviornmentTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		ExtraModuleNames.Add("EJ_Enviornment");
-	}
+        //C:\Git_Fast\EJ_Enviornment\Binaries\Win64
+        //PublicAdditionalLibraries.Add(@"c:/Git_Fast/EJ_Enviornment/Binaries/Win64/Scrutiny.lib");
+    }
 }
