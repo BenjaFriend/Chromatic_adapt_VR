@@ -91,24 +91,14 @@ void AEJ_EnviornmentCharacter::SetupPlayerInputComponent( class UInputComponent*
     // set up gameplay key bindings
     check( PlayerInputComponent );
 
-    // Bind jump events
-    //PlayerInputComponent->BindAction( "Jump", IE_Pressed, this, &ACharacter::Jump );
-    //PlayerInputComponent->BindAction( "Jump", IE_Released, this, &ACharacter::StopJumping );
-
-    // Bind fire event
-    //PlayerInputComponent->BindAction( "Fire", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnFire );
-
-    // Enable touchscreen input
-    EnableTouchscreenMovement( PlayerInputComponent );
-
     PlayerInputComponent->BindAction( "Menu", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnMenu );
     PlayerInputComponent->BindAction( "Fire", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnFire );
     PlayerInputComponent->BindAction( "Fire", IE_Released, this, &AEJ_EnviornmentCharacter::OnFireReleased );
     PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &AEJ_EnviornmentCharacter::OnResetVR );
 
     // Bind movement events
-    //PlayerInputComponent->BindAxis( "MoveForward", this, &AEJ_EnviornmentCharacter::MoveForward );
-    //PlayerInputComponent->BindAxis( "MoveRight", this, &AEJ_EnviornmentCharacter::MoveRight );
+    PlayerInputComponent->BindAxis( "MoveForward", this, &AEJ_EnviornmentCharacter::MoveForward );
+    PlayerInputComponent->BindAxis( "MoveRight", this, &AEJ_EnviornmentCharacter::MoveRight );
 
     // We have 2 versions of the rotation bindings to handle different kinds of devices differently
     // "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -121,7 +111,6 @@ void AEJ_EnviornmentCharacter::SetupPlayerInputComponent( class UInputComponent*
 
 void AEJ_EnviornmentCharacter::OnMenu()
 {
-    UE_LOG( LogTemp, Display, TEXT( "Pressed the Menu button!" ) );
     if ( LevelSelectWidget != nullptr )
     {
         LevelSelectWidget->SetActorHiddenInGame( !LevelSelectWidget->bHidden );
@@ -132,15 +121,11 @@ void AEJ_EnviornmentCharacter::OnMenu()
 
 void AEJ_EnviornmentCharacter::OnFire()
 {
-    UE_LOG( LogTemp, Warning, TEXT( "Pressed the Fire button!" ) );
-
     LevelSelectInteraction->PressPointerKey( EKeys::LeftMouseButton );
 }
 
 void AEJ_EnviornmentCharacter::OnFireReleased()
 {
-    UE_LOG( LogTemp, Warning, TEXT( "Released the fire key!" ) );
-
     LevelSelectInteraction->ReleasePointerKey( EKeys::LeftMouseButton );
 }
 
@@ -149,34 +134,9 @@ void AEJ_EnviornmentCharacter::OnResetVR()
     UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
-void AEJ_EnviornmentCharacter::BeginTouch( const ETouchIndex::Type FingerIndex, const FVector Location )
-{
-    if ( TouchItem.bIsPressed == true )
-    {
-        return;
-    }
-    if ( ( FingerIndex == TouchItem.FingerIndex ) && ( TouchItem.bMoved == false ) )
-    {
-        OnFire();
-    }
-    TouchItem.bIsPressed = true;
-    TouchItem.FingerIndex = FingerIndex;
-    TouchItem.Location = Location;
-    TouchItem.bMoved = false;
-}
-
-void AEJ_EnviornmentCharacter::EndTouch( const ETouchIndex::Type FingerIndex, const FVector Location )
-{
-    if ( TouchItem.bIsPressed == false )
-    {
-        return;
-    }
-    TouchItem.bIsPressed = false;
-}
-
 void AEJ_EnviornmentCharacter::MoveForward( float Value )
 {
-    if ( Value != 0.0f )
+    if ( Value != 0.0f && bCanMove )
     {
         // add movement in that direction
         AddMovementInput( GetActorForwardVector(), Value );
@@ -185,7 +145,7 @@ void AEJ_EnviornmentCharacter::MoveForward( float Value )
 
 void AEJ_EnviornmentCharacter::MoveRight( float Value )
 {
-    if ( Value != 0.0f )
+    if ( Value != 0.0f && bCanMove )
     {
         // add movement in that direction
         AddMovementInput( GetActorRightVector(), Value );
@@ -202,19 +162,4 @@ void AEJ_EnviornmentCharacter::LookUpAtRate( float Rate )
 {
     // calculate delta for this frame from the rate information
     AddControllerPitchInput( Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds() );
-}
-
-bool AEJ_EnviornmentCharacter::EnableTouchscreenMovement( class UInputComponent* PlayerInputComponent )
-{
-    if ( FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch )
-    {
-        PlayerInputComponent->BindTouch( EInputEvent::IE_Pressed, this, &AEJ_EnviornmentCharacter::BeginTouch );
-        PlayerInputComponent->BindTouch( EInputEvent::IE_Released, this, &AEJ_EnviornmentCharacter::EndTouch );
-
-        //Commenting this out to be more consistent with FPS BP template.
-        //PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AEJ_EnviornmentCharacter::TouchUpdate);
-        return true;
-    }
-
-    return false;
 }

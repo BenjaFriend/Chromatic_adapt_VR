@@ -62,6 +62,10 @@ public:
     UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Demo Settings" )
     uint32 bUseEyeLevel : 1;
 
+    /** Whether to use eye level for the VR Camera. */
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Demo Settings" )
+    uint32 bCanMove : 1;
+
 protected:
 
     /** Menu Pressed */
@@ -94,31 +98,10 @@ protected:
      */
     void LookUpAtRate( float Rate );
 
-    struct TouchData
-    {
-        TouchData() { bIsPressed = false; Location = FVector::ZeroVector; }
-        bool bIsPressed;
-        ETouchIndex::Type FingerIndex;
-        FVector Location;
-        bool bMoved;
-    };
-    void BeginTouch( const ETouchIndex::Type FingerIndex, const FVector Location );
-    void EndTouch( const ETouchIndex::Type FingerIndex, const FVector Location );
-    void TouchUpdate( const ETouchIndex::Type FingerIndex, const FVector Location );
-    TouchData	TouchItem;
-
 protected:
     // APawn interface
     virtual void SetupPlayerInputComponent( UInputComponent* InputComponent ) override;
     // End of APawn interface
-
-    /*
-     * Configures input for touchscreen devices if there is a valid touch interface for doing so
-     *
-     * @param	InputComponent	The input component pointer to bind controls to
-     * @returns true if touch controls were enabled.
-     */
-    bool EnableTouchscreenMovement( UInputComponent* InputComponent );
 
 public:
     /** Returns FirstPersonCameraComponent subobject **/
