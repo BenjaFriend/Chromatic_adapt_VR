@@ -13,7 +13,7 @@ typedef const int( *_SendReport )( );   // Declare a method to store the DLL met
 typedef const int( *_ReportFloat )( const char* aKey, float aValue );   // Declare a method to store the DLL method Release.
 typedef const int( *_ReportCharacter )( const char* aKey, const char* aValue );   // Declare a method to store the DLL method Release.
 
-
+// Don't forget to release these!
 _InitLib            m_getInitLibFromDll;
 _Release            m_getReleaseFromDll;
 _TestRequest        m_getTestRequestFromDll;
@@ -254,6 +254,12 @@ void UScrutinyBFL::freeDLL()
         m_getInitLibFromDll = NULL;
         m_getTestRequestFromDll = NULL;
         m_getReleaseFromDll = NULL;
+
+        m_getStartReportFromDll = NULL;
+        m_getSendReportFromDll = NULL;
+
+        m_getReportFloatFromDll = NULL;
+        m_getReportCharacterFromDll = NULL;
 
         FPlatformProcess::FreeDllHandle( v_dllHandle );
         v_dllHandle = NULL;
